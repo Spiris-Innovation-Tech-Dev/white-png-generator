@@ -57,8 +57,13 @@
   .dims { text-align: center; font-size: 15px; color: #888; margin-bottom: 16px; }
   .preview-wrap { display: flex; justify-content: center; margin-bottom: 20px; }
   .preview { border: 1px solid #ddd; background: #fff; transition: all .2s; }
-  .download { width: 100%; padding: 14px; background: #111; color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: background .15s; }
+  .btn-row { display: flex; gap: 8px; }
+  .btn-row button { flex: 1; padding: 14px; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all .15s; }
+  .download { background: #111; color: #fff; }
   .download:hover { background: #333; }
+  .copy { background: #f0f0f0; color: #333; }
+  .copy:hover { background: #e0e0e0; }
+  .copy.copied { background: #22c55e; color: #fff; }
   footer { text-align: center; padding: 20px 0 12px; font-size: 13px; color: #aaa; }
   footer .heart { display: inline; color: #e25555; }
 </style>
@@ -106,7 +111,10 @@
   <div class="dims" id="dims"></div>
   <div class="preview-wrap"><div class="preview" id="preview"></div></div>
 
-  <button class="download" id="download">Download PNG</button>
+  <div class="btn-row">
+    <button class="download" id="download">Download</button>
+    <button class="copy" id="copy">Copy Image</button>
+  </div>
 </div>
 <footer>Made with <span class="heart">&#9829;</span> by Spiris</footer>
 
@@ -129,6 +137,7 @@
   const btnL = document.getElementById('btn-landscape');
   const btnP = document.getElementById('btn-portrait');
   const dlBtn = document.getElementById('download');
+  const copyBtn = document.getElementById('copy');
   const customPanel = document.getElementById('custom-panel');
   const sliderSection = document.getElementById('slider-section');
   const manualSection = document.getElementById('manual-section');
@@ -261,20 +270,35 @@
   btnL.onclick = () => { portrait = false; btnL.classList.add('active'); btnP.classList.remove('active'); updateAll(); };
   btnP.onclick = () => { portrait = true; btnP.classList.add('active'); btnL.classList.remove('active'); updateAll(); };
 
-  dlBtn.onclick = () => {
+  function makeBlob(cb) {
     const [w, h] = getWH();
     const c = document.createElement('canvas');
     c.width = w; c.height = h;
     const ctx = c.getContext('2d');
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, w, h);
-    c.toBlob(blob => {
+    c.toBlob(cb, 'image/png');
+  }
+
+  dlBtn.onclick = () => {
+    makeBlob(blob => {
+      const [w, h] = getWH();
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = `white-${w}x${h}.png`;
       a.click();
       URL.revokeObjectURL(a.href);
-    }, 'image/png');
+    });
+  };
+
+  copyBtn.onclick = () => {
+    makeBlob(blob => {
+      navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => {
+        copyBtn.textContent = 'Copied!';
+        copyBtn.classList.add('copied');
+        setTimeout(() => { copyBtn.textContent = 'Copy Image'; copyBtn.classList.remove('copied'); }, 1500);
+      });
+    });
   };
 
   updateAll();
