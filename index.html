@@ -359,7 +359,7 @@
 
 <script>
 (function() {
-  const MODEL_PATH = 'https://github.com/Spiris-Innovation-Tech-Dev/gemini-tools/releases/download/v1.0/lama_fp32.onnx';
+  const MODEL_PATH = 'https://api.github.com/repos/Spiris-Innovation-Tech-Dev/gemini-tools/releases/assets/394129220';
   const INPUT_SIZE = 512;
   const WM_HEIGHT_RATIO = 0.15;
   const WM_WIDTH_RATIO = 0.15;
@@ -412,7 +412,7 @@
   }
 
   async function fetchModel(onProgress) {
-    const res = await fetch(MODEL_PATH);
+    const res = await fetch(MODEL_PATH, { headers: { 'Accept': 'application/octet-stream' } });
     if (!res.ok) throw new Error('Failed to fetch model');
     const len = parseInt(res.headers.get('Content-Length') || '0', 10);
     const reader = res.body.getReader();
